@@ -1,4 +1,5 @@
 #include "Graph.hpp"
+#include <cstdlib> 
 
 void Graph::fill_matrix(int u , int v){
         adjacency_matrix[u][v] += 1;
@@ -13,6 +14,60 @@ void Graph::print_graph(){
         std::cout<<std::endl;
     }
 }
+
+void Graph::add_verteces_for_render(Agraph_t* g)
+{
+    for (const auto& [u, v] : edges) {
+        Agnode_t* v1 = agnode(g, const_cast<char*>(std::to_string(u).c_str()), true);
+        Agnode_t* v2 = agnode(g, const_cast<char*>(std::to_string(v).c_str()), true);
+        agedge(g, v1,v2,nullptr,true);
+    }
+}
+
+void Graph::render_input_image(const char* input_image_name)
+{
+    std::string filename = input_image_name;
+    std::string name = filename.substr(0, filename.length() - 3);
+    std::string image_extension = "png";
+    filename = name + image_extension;
+
+    Agraph_t* g = agopen("gr", Agundirected, nullptr);
+
+    add_verteces_for_render(g);
+
+    GVC_t* gvc = gvContext();
+    gvLayout(gvc, g, "dot");
+    gvRenderFilename(gvc, g, image_extension.c_str(), filename.c_str());
+
+    agclose(g);
+    gvFreeLayout(gvc, g);
+    gvFreeContext(gvc);
+}
+
+void Graph::render_output_image(const char *outputImageName, Vector cover)
+{
+    Agraph_t* g = agopen("gr", Agundirected, nullptr);
+
+    add_verteces_for_render(g);
+
+    for (const auto& v : cover) {
+        Agnode_t* n = agfindnode(g, const_cast<char*>(std::to_string(v).c_str()));
+        if (n) {
+            agsafeset(n, const_cast<char*>("color"), const_cast<char*>("red"), const_cast<char*>(""));
+            agsafeset(n, const_cast<char*>("style"), const_cast<char*>("filled"), const_cast<char*>(""));
+            agsafeset(n, const_cast<char*>("fillcolor"), const_cast<char*>("firebrick2"), const_cast<char*>(""));
+        }
+    }
+
+    GVC_t* gvc = gvContext();
+    gvLayout(gvc, g, "dot");
+    gvRenderFilename(gvc, g, "png", outputImageName);
+
+    agclose(g);
+    gvFreeLayout(gvc, g);
+    gvFreeContext(gvc);
+}
+
 
 Graph::Graph(const char* filename)
 {
@@ -29,6 +84,7 @@ Graph::Graph(const char* filename)
     }
     file.close();
 
+    render_input_image(filename);
 	vertex_count = verteces.size();
 
 	adjacency_matrix = Matrix(vertex_count , std::vector<int>(vertex_count));	
@@ -69,8 +125,8 @@ Vector Graph::brute_force_min_cover() {
     return bestCover;
 }
 
-
-Verteces Graph::approx_min_cover() {
+Verteces Graph::approx_min_cover()
+{
     Verteces C;
     auto E_ = edges;
     while (!E_.empty())
@@ -91,5 +147,11 @@ Verteces Graph::approx_min_cover() {
  
     // C = {1,2}
     // e = 
-    // E_ = (1,3) 
+    // E_ = (1,3)
+}
+
+void show(const char* outputFilename){
+    std::string command = "xdg-open ";
+    command += outputFilename;
+    system(command.c_str());
 }
