@@ -24,10 +24,12 @@ class Graph
     public:
 		Graph(const char* filename);   
 	public:
-		void fill_matrix(int u , int v);
-		void print_graph();
-		Verteces approx_min_cover();
+		//void fill_matrix(int u , int v);
+		//void print_graph();
+		void print_edges();
+		Vector approx_min_cover();
 		Vector brute_force_min_cover();
+		
 	private:
 		bool is_vertex_cover(const Vector&);
 
@@ -38,7 +40,7 @@ class Graph
 		void render_output_image(const char* outputImageName, Vector cover);
 	
 	public:
-		Matrix adjacency_matrix;
+		//Matrix adjacency_matrix;
 		Verteces verteces;
 		std::vector<Edge> edges;
         int	vertex_count;

@@ -1,19 +1,19 @@
 #include "Graph.hpp"
 #include <cstdlib> 
 
-void Graph::fill_matrix(int u , int v){
-        adjacency_matrix[u][v] += 1;
-        adjacency_matrix[v][u] += 1;
-}
+// void Graph::fill_matrix(int u , int v){
+//         adjacency_matrix[u][v] += 1;
+//         adjacency_matrix[v][u] += 1;
+// }
 
-void Graph::print_graph(){
-    for(auto i : adjacency_matrix){
-        for(auto j : i){
-            std::cout << j << " ";
-        }
-        std::cout<<std::endl;
-    }
-}
+// void Graph::print_graph(){
+//     for(auto i : adjacency_matrix){
+//         for(auto j : i){
+//             std::cout << j << " ";
+//         }
+//         std::cout<<std::endl;
+//     }
+// }
 
 void Graph::add_verteces_for_render(Agraph_t* g)
 {
@@ -78,20 +78,24 @@ Graph::Graph(const char* filename)
 
     while (file >> u >> v)
     {
-        edges.push_back({u,v});
-        verteces.insert(u);
-        verteces.insert(v);
+        if(std::end(edges) == std::find_if(edges.begin(),edges.end(),[u,v](Edge e){
+            return (e.first == u && e.second == v) || (e.first == v && e.second == u); 
+        })){
+            edges.push_back({u,v});
+            verteces.insert(u);
+            verteces.insert(v);
+        }
     }
     file.close();
 
     render_input_image(filename);
 	vertex_count = verteces.size();
 
-	adjacency_matrix = Matrix(vertex_count , std::vector<int>(vertex_count));	
+	// adjacency_matrix = Matrix(vertex_count , std::vector<int>(vertex_count));	
    
-    for(const auto& [u,v] : edges){
-        fill_matrix(u, v);
-    }
+    // for(const auto& [u,v] : edges){
+    //     fill_matrix(u, v);
+    // }
 }
 
 bool Graph::is_vertex_cover(const Vector& subset) {
@@ -125,29 +129,22 @@ Vector Graph::brute_force_min_cover() {
     return bestCover;
 }
 
-Verteces Graph::approx_min_cover()
+Vector Graph::approx_min_cover()
 {
-    Verteces C;
+    Vector C;
     auto E_ = edges;
     while (!E_.empty())
     {
         Edge e = E_.front();
+        C.push_back(e.first);
+        C.push_back(e.second);
         auto new_end = std::remove_if(E_.begin() , E_.end(), [e](Edge f){
             return ((e.first == f.first || e.first == f.second) || 
                     (e.second == f.second || e.second == f.first));
         });
         E_.erase(new_end , E_.end());
-        C.insert(e.first);
-        C.insert(e.second);
     }
     return C;
-    // C = 0
-    // e = (1,2)
-    // E_ = (1,2) ,(4,1), (2,4) , (1,3)
- 
-    // C = {1,2}
-    // e = 
-    // E_ = (1,3)
 }
 
 void show(const char* outputFilename){
