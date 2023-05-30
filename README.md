@@ -1,7 +1,7 @@
 # Vertex cover
 
 ### What you need
-You must use linux system and gcc compiler
+You must use linux system and gcc compiler.<br /> 
 Install graphviz library
 ```
 sudo apt install libgraphviz-dev
