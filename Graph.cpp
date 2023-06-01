@@ -1,20 +1,6 @@
 #include "Graph.hpp"
 #include <cstdlib> 
 
-// void Graph::fill_matrix(int u , int v){
-//         adjacency_matrix[u][v] += 1;
-//         adjacency_matrix[v][u] += 1;
-// }
-
-// void Graph::print_graph(){
-//     for(auto i : adjacency_matrix){
-//         for(auto j : i){
-//             std::cout << j << " ";
-//         }
-//         std::cout<<std::endl;
-//     }
-// }
-
 void Graph::add_verteces_for_render(Agraph_t* g)
 {
     for (const auto& [u, v] : edges) {
@@ -72,10 +58,8 @@ void Graph::render_output_image(const char *outputImageName, Vector cover)
 Graph::Graph(const char* filename)
 {
 	std::ifstream file{filename};
-
     int u, v;
-
-
+    
     while (file >> u >> v)
     {
         if(std::end(edges) == std::find_if(edges.begin(),edges.end(),[u,v](Edge e){
@@ -90,12 +74,7 @@ Graph::Graph(const char* filename)
 
     render_input_image(filename);
 	vertex_count = verteces.size();
-
-	// adjacency_matrix = Matrix(vertex_count , std::vector<int>(vertex_count));	
-   
-    // for(const auto& [u,v] : edges){
-    //     fill_matrix(u, v);
-    // }
+    vertexVector = Vector(verteces.begin(), verteces.end());
 }
 
 bool Graph::is_vertex_cover(const Vector& subset) {
@@ -109,15 +88,14 @@ bool Graph::is_vertex_cover(const Vector& subset) {
 }
 
 Vector Graph::brute_force_min_cover() {
-    int n = verteces.size();
+    int n = vertexVector.size();
     Vector cover;
-    Vector bestCover;
+    Vector bestCover = vertexVector;
     int minCoverSize = n;
     for (int mask = 0; mask < (1 << n); mask++) { //2^n
-        cover.clear();
         for (int i = 0; i < n; i++) { // n
             if (mask & (1 << i)) {
-                cover.push_back(*(std::next(verteces.begin(), i)));
+                cover.push_back(vertexVector[i]);
             }
         }
         if (cover.size() < minCoverSize && is_vertex_cover(cover)) {
@@ -125,6 +103,7 @@ Vector Graph::brute_force_min_cover() {
             bestCover.clear();
             std::copy(cover.begin(),cover.end(),std::back_inserter(bestCover));
         }
+        cover.clear();
     }
     return bestCover;
 }
@@ -143,6 +122,39 @@ Vector Graph::approx_min_cover()
                     (e.second == f.second || e.second == f.first));
         });
         E_.erase(new_end , E_.end());
+    }
+    return C;
+}
+
+struct EdgeComparator {
+    bool operator()(const Edge& e1, const Edge& e2) const {
+        if (e1.first != e2.first) {
+            return e1.first < e2.first;
+        }
+        return e1.second < e2.second;
+    }
+};
+
+Vector Graph::approx_min_cover_v2()
+{
+    Vector C;
+    std::unordered_set<int> V; 
+    std::set<Edge, EdgeComparator> E_;  
+
+    for (const auto& edge : edges) {
+        E_.emplace(edge); 
+    }
+
+    while (!E_.empty()) {
+        auto e = *E_.begin();  
+        E_.erase(E_.begin());  
+
+        if (V.find(e.first) == V.end() && V.find(e.second) == V.end()) {
+            C.push_back(e.first);
+            C.push_back(e.second);
+            V.insert(e.first);
+            V.insert(e.second);
+        }
     }
     return C;
 }

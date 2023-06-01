@@ -1,7 +1,6 @@
 #include "Graph.hpp"
 #include <iterator>
 
-
 int main(int argc, char **argv)
 {
 	Graph my_graph(argv[1]);
